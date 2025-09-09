@@ -3,11 +3,8 @@ package ru.practicum.shareit.user.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.user.dto.*;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.dto.NewUserAddRequest;
-import ru.practicum.shareit.user.dto.UpdateUserRequest;
-import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.user.service.UserService;
 import ru.practicum.shareit.util.AppValidation;
@@ -21,29 +18,30 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final UserMapStruct userMapStruct;
 
     @Override
     public UserDto addUser(NewUserAddRequest newUserAddRequest) {
         AppValidation.userValidator(newUserAddRequest);
-        User user = userRepository.addUser(UserMapper.newUser(newUserAddRequest));
+        User user = userRepository.addUser(userMapStruct.newUser(newUserAddRequest));
         log.info("UserServiceImpl: добавлен новый пользователь с id = {}", user.getId());
-        return UserMapper.toUserDto(user);
+        return userMapStruct.toUserDto(user);
     }
 
     @Override
     public UserDto updateUser(Long userId, UpdateUserRequest updateUserRequest) {
         User user = userRepository.getUserById(userId);
-        UserMapper.updateUser(user, updateUserRequest);
+        userMapStruct.updateUser(user, updateUserRequest);
         userRepository.updateUser(user);
         log.info("UserServiceImpl: пользователь с id = {} обновлен", user.getId());
-        return UserMapper.toUserDto(user);
+        return userMapStruct.toUserDto(user);
     }
 
     @Override
     public UserDto getUserById(Long userId) {
         User user = userRepository.getUserById(userId);
         log.info("UserServiceImpl: получение пользователя с id = {}", user.getId());
-        return UserMapper.toUserDto(user);
+        return userMapStruct.toUserDto(user);
     }
 
     @Override
@@ -51,7 +49,7 @@ public class UserServiceImpl implements UserService {
         List<User> allUsers = userRepository.getAllUsers();
         log.info("UserServiceImpl: получение списка всех пользователей, количество пользователей = {}", allUsers.size());
         return allUsers.stream()
-                .map(UserMapper::toUserDto)
+                .map(userMapStruct::toUserDto)
                 .collect(Collectors.toList());
     }
 

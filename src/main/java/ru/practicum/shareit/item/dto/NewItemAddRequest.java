@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import ru.practicum.shareit.request.ItemRequest;
-import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.dto.UserDto;
 
 @Data
 public class NewItemAddRequest {
@@ -21,7 +21,7 @@ public class NewItemAddRequest {
 
     private Boolean available;
 
-    private User owner;
+    private UserDto owner;
 
     private ItemRequest request;
 

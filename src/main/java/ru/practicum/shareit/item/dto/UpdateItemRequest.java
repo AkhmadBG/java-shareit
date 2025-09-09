@@ -3,8 +3,7 @@ package ru.practicum.shareit.item.dto;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import ru.practicum.shareit.request.ItemRequest;
-import ru.practicum.shareit.user.model.User;
-
+import ru.practicum.shareit.user.dto.UserDto;
 
 @Data
 public class UpdateItemRequest {
@@ -16,7 +15,7 @@ public class UpdateItemRequest {
 
     private Boolean available;
 
-    private User owner;
+    private UserDto owner;
 
     private ItemRequest request;
 

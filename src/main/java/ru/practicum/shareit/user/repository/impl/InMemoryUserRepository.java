@@ -1,9 +1,9 @@
 package ru.practicum.shareit.user.repository.impl;
 
-import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
+import ru.practicum.shareit.exception.ConflictException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -25,9 +25,9 @@ public class InMemoryUserRepository implements UserRepository {
     public User addUser(User user) {
         List<String> usersEmails = users.values().stream()
                 .map(User::getEmail)
-                .collect(Collectors.toList());
+                .toList();
         if (usersEmails.contains(user.getEmail())) {
-            throw new ValidationException("пользователь с такой электронной почтой " + user.getEmail()
+            throw new ConflictException("пользователь с такой электронной почтой " + user.getEmail()
                     + " уже существует");
         }
         users.put(getIdentifier(), user);
@@ -49,7 +49,7 @@ public class InMemoryUserRepository implements UserRepository {
         for (User checkUser : usersList) {
             if (checkUser.getEmail().equals(user.getEmail()) &&
                     !checkUser.getId().equals(user.getId())) {
-                throw new ValidationException("пользователь с такой электронной почтой " + user.getEmail()
+                throw new ConflictException("пользователь с такой электронной почтой " + user.getEmail()
                         + " уже существует");
             }
         }

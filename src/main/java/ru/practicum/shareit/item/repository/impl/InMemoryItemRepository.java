@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.user.dto.UserMapStruct;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.*;
@@ -17,12 +18,13 @@ public class InMemoryItemRepository implements ItemRepository {
 
     private final Map<Long, Item> items = new HashMap<>();
     private Long identifier = 0L;
+    private final UserMapStruct userMapStruct;
 
     @Override
     public Item addItem(Item item, User owner) {
         item.setOwner(owner);
         item.setId(getIdentifier());
-        items.put(identifier, item);
+        items.put(item.getId(), item);
         log.info("InMemoryItemRepository: вещь c id = {} добавлена пользователю с id = {}", item.getId(), owner.getId());
         return items.get(identifier);
     }

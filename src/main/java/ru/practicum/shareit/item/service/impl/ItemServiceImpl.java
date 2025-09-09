@@ -5,13 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.AccessException;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemMapper;
-import ru.practicum.shareit.item.dto.NewItemAddRequest;
-import ru.practicum.shareit.item.dto.UpdateItemRequest;
 import ru.practicum.shareit.item.service.ItemService;
+import ru.practicum.shareit.user.dto.UserMapStruct;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.util.AppValidation;
@@ -26,6 +24,8 @@ public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final UserMapStruct userMapStruct;
+    private final ItemMapStruct itemMapStruct;
 
     @Override
     public ItemDto addItem(Long userId, NewItemAddRequest newItemAddRequest) {
@@ -34,9 +34,10 @@ public class ItemServiceImpl implements ItemService {
             throw new NotFoundException("Владелец вещи не найден или не существует");
         }
         AppValidation.itemValidator(newItemAddRequest);
-        Item item = itemRepository.addItem(ItemMapper.newItem(newItemAddRequest, owner), owner);
-        log.info("ItemServiceImpl: вещь c id = {} добавлена пользователю с id = {}", item.getId(), userId);
-        return ItemMapper.toItemDto(item);
+        Item item = itemMapStruct.newItem(newItemAddRequest, userMapStruct.toUserDto(owner));
+        Item newItem = itemRepository.addItem(item, owner);
+        log.info("ItemServiceImpl: вещь c id = {} добавлена пользователю с id = {}", newItem.getId(), userId);
+        return itemMapStruct.toItemDto(newItem);
     }
 
     @Override
@@ -45,17 +46,17 @@ public class ItemServiceImpl implements ItemService {
         if (!userId.equals(item.getOwner().getId())) {
             throw new AccessException("изменить вещь может только владелец");
         }
-        ItemMapper.updateItem(item, updateItemRequest);
+        itemMapStruct.updateItem(item, updateItemRequest);
         itemRepository.updateItem(item);
         log.info("ItemServiceImpl: вещь c id = {} пользователя с id = {} обновлена", item.getId(), userId);
-        return ItemMapper.toItemDto(item);
+        return itemMapStruct.toItemDto(item);
     }
 
     @Override
     public ItemDto getItemById(Long itemId) {
         Item item = itemRepository.getItemById(itemId);
         log.info("ItemServiceImpl: получение вещи c id = {} ", itemId);
-        return ItemMapper.toItemDto(item);
+        return itemMapStruct.toItemDto(item);
     }
 
     @Override
@@ -63,7 +64,7 @@ public class ItemServiceImpl implements ItemService {
         List<Item> userItems = itemRepository.getItemsByUserId(userId);
         log.info("ItemServiceImpl: получение списка вещей пользователя с id = {}", userId);
         return userItems.stream()
-                .map(ItemMapper::toItemDto)
+                .map(itemMapStruct::toItemDto)
                 .collect(Collectors.toList());
     }
 
@@ -72,7 +73,7 @@ public class ItemServiceImpl implements ItemService {
         List<Item> allItems = itemRepository.getAllItems();
         log.info("ItemServiceImpl: получение списка всех вещей, всего {} вещей", allItems.size());
         return allItems.stream()
-                .map(ItemMapper::toItemDto)
+                .map(itemMapStruct::toItemDto)
                 .collect(Collectors.toList());
     }
 
@@ -87,7 +88,7 @@ public class ItemServiceImpl implements ItemService {
         List<Item> searchItem = itemRepository.searchItems(text);
         log.info("ItemServiceImpl: поиск вещей, в названии или описании которого встречается {}", text);
         return searchItem.stream()
-                .map(ItemMapper::toItemDto)
+                .map(itemMapStruct::toItemDto)
                 .collect(Collectors.toList());
     }
 

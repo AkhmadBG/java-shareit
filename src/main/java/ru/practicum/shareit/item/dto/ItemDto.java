@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.request.ItemRequest;
-import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.dto.UserDto;
 
 @Data
 @Builder
@@ -21,7 +21,7 @@ public class ItemDto {
 
     private Boolean available;
 
-    private User owner;
+    private UserDto owner;
 
     private ItemRequest request;
 
