@@ -1,23 +1,15 @@
-package ru.practicum.shareit.item.model;
+package ru.practicum.shareit.item.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.*;
+import lombok.Data;
 import ru.practicum.shareit.request.ItemRequest;
-import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.dto.UserDto;
 
-@Setter
-@Getter
-@Builder
-@ToString
-@EqualsAndHashCode(exclude = "owner")
-@AllArgsConstructor
-@NoArgsConstructor
-public class Item {
-
-    private Long id;
+@Data
+public class NewItemAddRequest {
 
     @NotBlank
     @NotEmpty
@@ -25,14 +17,11 @@ public class Item {
     private String name;
 
     @Size(max = 200)
-    @NotBlank
-    @NotEmpty
-    @NotNull
     private String description;
 
     private Boolean available;
 
-    private User owner;
+    private UserDto owner;
 
     private ItemRequest request;
 
