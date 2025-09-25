@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking.model;
 
+import com.querydsl.core.annotations.QueryEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import ru.practicum.shareit.item.model.Item;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@QueryEntity
 @Table(name = "bookings")
 public class Booking {
 
