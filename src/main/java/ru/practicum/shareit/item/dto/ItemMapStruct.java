@@ -15,4 +15,5 @@ public interface ItemMapStruct {
     Item newItem(NewItemAddRequest newItemAddRequest);
 
     void updateItem(@MappingTarget Item item, UpdateItemRequest updateItemRequest);
+
 }

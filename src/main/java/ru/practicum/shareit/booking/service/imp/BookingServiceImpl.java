@@ -1,16 +1,13 @@
 package ru.practicum.shareit.booking.service.imp;
 
-import com.querydsl.core.types.dsl.BooleanExpression;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingMapStruct;
 import ru.practicum.shareit.booking.dto.NewBookingAddRequest;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
-import ru.practicum.shareit.booking.model.QBooking;
 import ru.practicum.shareit.booking.model.StateParam;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.booking.service.BookingService;
@@ -26,6 +23,7 @@ import ru.practicum.shareit.util.AppValidation;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -88,55 +86,36 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<BookingDto> getUserBookings(Long userId, StateParam state) {
         log.info("BookingService: Получение списка бронирований пользователя: пользовательId={}, state={}", userId, state);
-        QBooking booking = QBooking.booking;
         LocalDateTime now = LocalDateTime.now();
-        BooleanExpression predicate = booking.booker.id.eq(userId);
-        switch (state) {
-            case CURRENT -> predicate = predicate
-                    .and(booking.start.loe(now))
-                    .and(booking.end.goe(now));
-            case PAST -> predicate = predicate.and(booking.end.before(now));
-            case FUTURE -> predicate = predicate.and(booking.start.after(now));
-            case WAITING -> predicate = predicate.and(booking.status.eq(BookingStatus.WAITING));
-            case REJECTED -> predicate = predicate.and(booking.status.eq(BookingStatus.REJECTED));
-            case StateParam.All -> {
-            }
-        }
-
-        List<Booking> bookingList = (List<Booking>) bookingRepository.findAll(
-                predicate,
-                Sort.by(Sort.Direction.DESC, "start")
-        );
-        log.info("BookingService: Найдено бронирований для пользователя {}: {}", userId, bookingList.size());
-        return bookingList.stream()
+        List<Booking> bookings = switch (state) {
+            case CURRENT -> bookingRepository.findByBookerIdAndStartBeforeAndEndAfter(userId, now, now);
+            case PAST -> bookingRepository.findByBookerIdAndEndBefore(userId, now);
+            case FUTURE -> bookingRepository.findByBookerIdAndStartAfter(userId, now);
+            case WAITING -> bookingRepository.findByBookerIdAndStatus(userId, BookingStatus.WAITING);
+            case REJECTED -> bookingRepository.findByBookerIdAndStatus(userId, BookingStatus.REJECTED);
+            default -> bookingRepository.findByBookerId(userId);
+        };
+        return bookings.stream()
                 .map(bookingMapStruct::toBookingDto)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<BookingDto> getBookingsForItemsByOwnerId(Long userId, StateParam state) {
         log.info("BookingService: Получение бронирований для вещей владельца: владелецId={}, state={}", userId, state);
-        QBooking booking = QBooking.booking;
         LocalDateTime now = LocalDateTime.now();
-        BooleanExpression predicate = booking.item.owner.id.eq(userId);
-        switch (state) {
-            case CURRENT -> predicate = predicate
-                    .and(booking.start.loe(now))
-                    .and(booking.end.goe(now));
-            case PAST -> predicate = predicate.and(booking.end.before(now));
-            case FUTURE -> predicate = predicate.and(booking.start.after(now));
-            case WAITING -> predicate = predicate.and(booking.status.eq(BookingStatus.WAITING));
-            case REJECTED -> predicate = predicate.and(booking.status.eq(BookingStatus.REJECTED));
-            case StateParam.All -> {
-            }
-        }
-
-        List<Booking> bookingList = (List<Booking>) bookingRepository.findAll(
-                predicate,
-                Sort.by(Sort.Direction.DESC, "start")
-        );
-        log.info("BookingService: Найдено бронирований для владельца {}: {}", userId, bookingList.size());
-        return bookingList.stream()
+        List<Booking> bookings = switch (state) {
+            case CURRENT ->
+                    bookingRepository.findByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(userId, now, now);
+            case PAST -> bookingRepository.findByItemOwnerIdAndEndBeforeOrderByStartDesc(userId, now);
+            case FUTURE -> bookingRepository.findByItemOwnerIdAndStartAfterOrderByStartDesc(userId, now);
+            case WAITING -> bookingRepository.findByItemOwnerIdAndStatusOrderByStartDesc(userId, BookingStatus.WAITING);
+            case REJECTED ->
+                    bookingRepository.findByItemOwnerIdAndStatusOrderByStartDesc(userId, BookingStatus.REJECTED);
+            default -> bookingRepository.findByItemOwnerIdOrderByStartDesc(userId);
+        };
+        log.info("BookingService: Найдено бронирований для владельца {}: {}", userId, bookings.size());
+        return bookings.stream()
                 .map(bookingMapStruct::toBookingDto)
                 .toList();
     }
