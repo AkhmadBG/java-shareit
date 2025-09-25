@@ -75,7 +75,7 @@ public class ItemServiceImpl implements ItemService {
         Optional<Booking> lastBooking = bookingRepository
                 .findFirstByItemAndEndAfterOrderByEndDesc(item, LocalDateTime.now());
 
-        ItemDtoWithDate itemDtoWithDate = itemMapStruct.ItemDtoWithDate(item);
+        ItemDtoWithDate itemDtoWithDate = itemMapStruct.itemDtoWithDate(item);
         itemDtoWithDate.setNextBooking(nextBooking.map(Booking::getStart).orElse(null));
         itemDtoWithDate.setLastBooking(lastBooking.map(Booking::getStart).orElse(null));
         log.info("ItemService: Вещь найдена: itemId={}", item.getId());

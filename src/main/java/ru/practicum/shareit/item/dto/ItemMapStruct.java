@@ -9,7 +9,7 @@ public interface ItemMapStruct {
 
     ItemDto toItemDto(Item item);
 
-    ItemDtoWithDate ItemDtoWithDate(Item item);
+    ItemDtoWithDate itemDtoWithDate(Item item);
 
     @Mapping(target = "name", source = "newItemAddRequest.name")
     Item newItem(NewItemAddRequest newItemAddRequest);
