@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.dto.UserDto;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,7 +15,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ItemDto {
+public class ItemDtoWithDate {
 
     private Long id;
 
@@ -27,6 +28,10 @@ public class ItemDto {
     private UserDto owner;
 
     private ItemRequest request;
+
+    private LocalDateTime lastBooking;
+
+    private LocalDateTime nextBooking;
 
     private List<CommentDto> comments = new ArrayList<>();
 
