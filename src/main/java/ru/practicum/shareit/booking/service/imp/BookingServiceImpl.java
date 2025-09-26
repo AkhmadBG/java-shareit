@@ -85,7 +85,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDto> getUserBookings(Long userId, StateParam state) {
-        log.info("BookingService: Получение списка бронирований пользователя: пользовательId={}, state={}", userId, state);
+        log.info("BookingService: Получение списка бронирований пользователя: пользователь Id={}, state={}", userId, state);
         LocalDateTime now = LocalDateTime.now();
         List<Booking> bookings = switch (state) {
             case CURRENT -> bookingRepository.findByBookerIdAndStartBeforeAndEndAfter(userId, now, now);
@@ -102,7 +102,8 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDto> getBookingsForItemsByOwnerId(Long userId, StateParam state) {
-        log.info("BookingService: Получение бронирований для вещей владельца: владелецId={}, state={}", userId, state);
+        User user = userService.getUserById(userId);
+        log.info("BookingService: Получение бронирований для вещей владельца: владелец Id={}, state={}", user.getId(), state);
         LocalDateTime now = LocalDateTime.now();
         List<Booking> bookings = switch (state) {
             case CURRENT ->
@@ -114,7 +115,7 @@ public class BookingServiceImpl implements BookingService {
                     bookingRepository.findByItemOwnerIdAndStatusOrderByStartDesc(userId, BookingStatus.REJECTED);
             default -> bookingRepository.findByItemOwnerIdOrderByStartDesc(userId);
         };
-        log.info("BookingService: Найдено бронирований для владельца {}: {}", userId, bookings.size());
+        log.info("BookingService: Найдено бронирований для владельца {}: {}", user.getId(), bookings.size());
         return bookings.stream()
                 .map(bookingMapStruct::toBookingDto)
                 .toList();

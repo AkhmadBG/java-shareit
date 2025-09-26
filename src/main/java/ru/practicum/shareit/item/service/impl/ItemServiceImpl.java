@@ -126,11 +126,10 @@ public class ItemServiceImpl implements ItemService {
         AppValidation.commentValidator(newCommentAddRequest);
         User author = userService.getUserById(userId);
         Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new NotFoundException("item not found"));
-
+                .orElseThrow(() -> new NotFoundException("вещь c id = " + itemId + " не найдена"));
         Booking booking = bookingRepository
-                .findFirstByBookerAndItemAndEndBeforeOrderByEndDesc(author, item, LocalDateTime.now());
-
+                .findFirstByBookerAndItemAndEndBeforeOrderByEndDesc(author, item, LocalDateTime.now())
+                .orElseThrow(() -> new ValidationException("бронирование не найдено"));
         if (!booking.getBooker().getId().equals(author.getId())) {
             log.warn("ItemService: Пользователь {} не может оставить комментарий к itemId={}", userId, itemId);
             throw new ValidationException("пользователь не может оставить комментарий");
@@ -139,7 +138,6 @@ public class ItemServiceImpl implements ItemService {
             log.warn("ItemService: Попытка оставить комментарий до завершения бронирования: userId={}, itemId={}", userId, itemId);
             throw new ValidationException("нельзя оставить комментарий до завершения бронирования");
         }
-
         Comment comment = commentMapStruct.newComment(author, item, newCommentAddRequest);
         comment.setCreated(LocalDateTime.now());
         Comment newComment = commentRepository.save(comment);

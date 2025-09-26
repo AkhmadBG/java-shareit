@@ -21,7 +21,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "WHERE b.id = :bookingId")
     Optional<Booking> findByIdWithBookerAndItem(Long bookingId);
 
-    Booking findFirstByBookerAndItemAndEndBeforeOrderByEndDesc(User booker, Item item, LocalDateTime now);
+    Optional<Booking> findFirstByBookerAndItemAndEndBeforeOrderByEndDesc(User booker, Item item, LocalDateTime now);
 
     Optional<Booking> findFirstByItemAndStartAfterOrderByStartAsc(Item item, LocalDateTime start);
 

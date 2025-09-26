@@ -2,7 +2,7 @@ package ru.practicum.shareit.booking.model;
 
 public enum StateParam {
 
-    All,
+    ALL,
     CURRENT,
     PAST,
     FUTURE,
@@ -13,7 +13,7 @@ public enum StateParam {
         try {
             return StateParam.valueOf(value.toUpperCase());
         } catch (IllegalArgumentException | NullPointerException e) {
-            return StateParam.All;
+            return StateParam.ALL;
         }
     }
 
