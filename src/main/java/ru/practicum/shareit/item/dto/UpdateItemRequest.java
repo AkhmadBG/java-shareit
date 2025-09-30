@@ -2,8 +2,6 @@ package ru.practicum.shareit.item.dto;
 
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import ru.practicum.shareit.request.ItemRequest;
-import ru.practicum.shareit.user.dto.UserDto;
 
 @Data
 public class UpdateItemRequest {
@@ -15,10 +13,6 @@ public class UpdateItemRequest {
 
     private Boolean available;
 
-    private UserDto owner;
-
-    private ItemRequest request;
-
     public boolean hasName() {
         return !(name == null || name.isBlank());
     }
@@ -29,14 +23,6 @@ public class UpdateItemRequest {
 
     public boolean hasAvailableStatus() {
         return available != null;
-    }
-
-    public boolean hasOwner() {
-        return owner != null;
-    }
-
-    public boolean hasRequest() {
-        return request != null;
     }
 
 }
