@@ -4,7 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.dto.RequestDto;
+import ru.practicum.shareit.request.model.Request;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import java.time.LocalDateTime;
@@ -27,7 +28,7 @@ public class ItemDtoWithDate {
 
     private UserDto owner;
 
-    private ItemRequest request;
+    private RequestDto request;
 
     private LocalDateTime lastBooking;
 

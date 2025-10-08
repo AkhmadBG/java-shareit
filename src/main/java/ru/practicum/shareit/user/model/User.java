@@ -32,7 +32,11 @@ public class User {
     @Column(name = "email", unique = true, nullable = false)
     private String email;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(
+            fetch = FetchType.LAZY,
+            mappedBy = "owner",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
     private List<Item> items = new ArrayList<>();
 
 }

@@ -4,7 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.dto.RequestDto;
+import ru.practicum.shareit.request.model.Request;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ public class ItemDto {
 
     private UserDto owner;
 
-    private ItemRequest request;
+    private RequestDto request;
 
     private List<CommentDto> comments = new ArrayList<>();
 

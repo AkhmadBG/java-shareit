@@ -15,4 +15,6 @@ public class NewItemAddRequest {
 
     private Boolean available;
 
+    private Long requestId;
+
 }

@@ -11,6 +11,11 @@ public interface ItemMapStruct {
 
     ItemDtoWithDate itemDtoWithDate(Item item);
 
+    @Mapping(target = "itemId", source = "item.id")
+    @Mapping(target = "name", source = "item.name")
+    @Mapping(target = "ownerId", source = "item.owner.id")
+    ItemDtoForRequest itemDtoForRequest(Item item);
+
     @Mapping(target = "name", source = "newItemAddRequest.name")
     Item newItem(NewItemAddRequest newItemAddRequest);
 

@@ -14,6 +14,8 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.item.service.ItemService;
+import ru.practicum.shareit.request.model.Request;
+import ru.practicum.shareit.request.service.RequestService;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 import ru.practicum.shareit.util.AppValidation;
@@ -33,6 +35,7 @@ public class ItemServiceImpl implements ItemService {
     private final CommentRepository commentRepository;
     private final BookingRepository bookingRepository;
     private final UserService userService;
+    private final RequestService requestService;
     private final ItemMapStruct itemMapStruct;
     private final CommentMapStruct commentMapStruct;
 
@@ -40,9 +43,13 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto addItem(Long userId, NewItemAddRequest newItemAddRequest) {
         log.info("ItemService: Создание вещи: пользовательId={}, запрос={}", userId, newItemAddRequest);
         AppValidation.itemValidator(newItemAddRequest);
-        User owner = userService.getUserById(userId);
         Item item = itemMapStruct.newItem(newItemAddRequest);
+        User owner = userService.getUserById(userId);
         item.setOwner(owner);
+        if (newItemAddRequest.getRequestId() != null) {
+            Request request = requestService.getRequestById(newItemAddRequest.getRequestId());
+            item.setRequest(request);
+        }
         Item newItem = itemRepository.save(item);
         log.info("ItemService: Вещь создана: itemId={}, пользовательId={}", newItem.getId(), userId);
         return itemMapStruct.toItemDto(newItem);
@@ -100,7 +107,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> searchItemsByText(String text) {
+    public List<ItemDto> searchItemsByText(String text) { //TODO реализовать с использованием пагинации
         log.info("ItemService: Поиск вещей по тексту: '{}'", text);
         if (text.trim().isBlank()) {
             log.info("ItemService: Пустая строка поиска — возврат пустого списка");
