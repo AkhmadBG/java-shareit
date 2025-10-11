@@ -6,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.RequestClient;
 import ru.practicum.shareit.request.dto.NewRequest;
-import ru.practicum.shareit.util.AppValidation;
 
 import static ru.practicum.shareit.util.AppConstant.CUSTOM_REQUEST_HEADER_USER_ID;
 
