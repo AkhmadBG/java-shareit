@@ -16,6 +16,8 @@ import ru.practicum.shareit.booking.dto.NewBookingAddRequest;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.model.StateParam;
 import ru.practicum.shareit.booking.service.BookingService;
+import ru.practicum.shareit.exception.AccessException;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.user.dto.UserDto;
 
@@ -157,6 +159,71 @@ class BookingControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(bookingDto.getId()))
                 .andExpect(jsonPath("$[0].status").value("WAITING"));
+    }
+
+    @Test
+    void addBooking_ShouldReturnInternalServerError_WhenItemUnavailable() throws Exception {
+        Mockito.when(bookingService.addBooking(eq(1L), any(NewBookingAddRequest.class)))
+                .thenThrow(new RuntimeException("вещь занята"));
+
+        mockMvc.perform(post("/bookings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(CUSTOM_REQUEST_HEADER_USER_ID, 1L)
+                        .content(objectMapper.writeValueAsString(newBookingAddRequest)))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    void approvedBooking_ShouldReturnForbidden_WhenUserNotOwner() throws Exception {
+        Mockito.when(bookingService.approvedBooking(1L, 1L, true))
+                .thenThrow(new AccessException("подтверждать бронирование может только владелец вещи"));
+
+        mockMvc.perform(patch("/bookings/{bookingId}", 1L)
+                        .param("approved", "true")
+                        .header(CUSTOM_REQUEST_HEADER_USER_ID, 1L))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void getBookingByBookerIdOrOwnerId_ShouldReturnNotFound_WhenBookingMissing() throws Exception {
+        Mockito.when(bookingService.getBookingByBookerIdOrOwnerId(1L, 1L))
+                .thenThrow(new NotFoundException("booking не найден"));
+
+        mockMvc.perform(get("/bookings/{bookingId}", 1L)
+                        .header(CUSTOM_REQUEST_HEADER_USER_ID, 1L))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getBookingByBookerIdOrOwnerId_ShouldReturnForbidden_WhenAccessDenied() throws Exception {
+        Mockito.when(bookingService.getBookingByBookerIdOrOwnerId(1L, 1L))
+                .thenThrow(new AccessException("просмотр бронирования доступен только владельцу вещи или автору бронирования"));
+
+        mockMvc.perform(get("/bookings/{bookingId}", 1L)
+                        .header(CUSTOM_REQUEST_HEADER_USER_ID, 1L))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void getUserBookings_ShouldReturnInternalError_WhenUnexpectedErrorOccurs() throws Exception {
+        Mockito.when(bookingService.getUserBookings(1L, StateParam.ALL))
+                .thenThrow(new RuntimeException("ошибка получения списка бронирований"));
+
+        mockMvc.perform(get("/bookings")
+                        .param("state", "ALL")
+                        .header(CUSTOM_REQUEST_HEADER_USER_ID, 1L))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    void getBookingsForItemsByOwnerId_ShouldReturnNotFound_WhenUserDoesNotExist() throws Exception {
+        Mockito.when(bookingService.getBookingsForItemsByOwnerId(1L, StateParam.ALL))
+                .thenThrow(new NotFoundException("пользователь не найден"));
+
+        mockMvc.perform(get("/bookings/owner")
+                        .param("state", "ALL")
+                        .header(CUSTOM_REQUEST_HEADER_USER_ID, 1L))
+                .andExpect(status().isNotFound());
     }
 
 }

@@ -11,6 +11,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDtoForRequest;
 import ru.practicum.shareit.request.dto.NewRequest;
 import ru.practicum.shareit.request.dto.RequestDto;
@@ -134,6 +135,36 @@ class RequestControllerTest {
                 .andExpect(jsonPath("$.items[0].itemId").value(itemDtoForRequest.getItemId()));
 
         Mockito.verify(requestService).getRequestDtoById(1L, 1L);
+    }
+
+    @Test
+    void getRequestById_ShouldReturnNotFound_WhenRequestDoesNotExist() throws Exception {
+        Mockito.when(requestService.getRequestDtoById(1L, 1L))
+                .thenThrow(new NotFoundException("Заявка не найдена"));
+
+        mockMvc.perform(get("/requests/1")
+                        .header(CUSTOM_REQUEST_HEADER_USER_ID, 1L))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getRequestsByUserId_ShouldReturnEmptyList_WhenUserHasNoRequests() throws Exception {
+        Mockito.when(requestService.getRequestsByUserId(1L))
+                .thenThrow(new NotFoundException("Заявки пользователя не найдены"));
+
+        mockMvc.perform(get("/requests")
+                        .header(CUSTOM_REQUEST_HEADER_USER_ID, 1L))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getRequestsOtherUsers_ShouldReturnEmptyList_WhenNoOtherUsersRequests() throws Exception {
+        Mockito.when(requestService.getRequestsOtherUsers(1L))
+                .thenThrow(new NotFoundException("Заявки других пользователей не найдены"));
+
+        mockMvc.perform(get("/requests/all")
+                        .header(CUSTOM_REQUEST_HEADER_USER_ID, 1L))
+                .andExpect(status().isNotFound());
     }
 
 }

@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item.service.impl;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +14,8 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.model.StateParam;
 import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.exception.AccessException;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
@@ -339,6 +342,36 @@ class ItemServiceImplTest {
         assertThat(result).isEqualTo(commentDto);
         verify(commentRepository, times(1)).save(comment);
         verify(commentMapStruct, times(1)).toCommentDto(comment);
+    }
+
+    @Test
+    void updateItem_ShouldThrowNotFoundException_WhenItemNotFound() {
+        Mockito.when(itemRepository.findByIdWithOwnerAndRequest(1L))
+                .thenReturn(Optional.empty());
+
+        Assertions.assertThatThrownBy(() -> itemServiceImpl.updateItem(1L, 1L, updateItemRequest))
+                .isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    void updateItem_ShouldThrowAccessException_WhenUserNotOwner() {
+        User anotherUser = User.builder().id(2L).build();
+        item.setOwner(anotherUser);
+
+        Mockito.when(itemRepository.findByIdWithOwnerAndRequest(1L))
+                .thenReturn(Optional.of(item));
+
+        Assertions.assertThatThrownBy(() -> itemServiceImpl.updateItem(1L, 1L, updateItemRequest))
+                .isInstanceOf(AccessException.class);
+    }
+
+    @Test
+    void getItemById_ShouldThrowNotFoundException_WhenItemNotFound() {
+        Mockito.when(itemRepository.findByIdWithOwnerAndRequest(1L))
+                .thenReturn(Optional.empty());
+
+        Assertions.assertThatThrownBy(() -> itemServiceImpl.getItemById(1L))
+                .isInstanceOf(NotFoundException.class);
     }
 
 }

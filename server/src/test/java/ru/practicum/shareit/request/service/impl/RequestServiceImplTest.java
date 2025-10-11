@@ -1,5 +1,6 @@
 package ru.practicum.shareit.request.service.impl;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -7,6 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDtoForRequest;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.dto.NewRequest;
@@ -166,6 +168,22 @@ class RequestServiceImplTest {
         assertThat(result).isEqualTo(requestDto);
         verify(requestRepository, times(1)).findById(1L);
         verify(requestMapStruct, times(1)).toRequestDto(request);
+    }
+
+    @Test
+    void getRequestById_ShouldThrowNotFoundException_WhenRequestNotFound() {
+        Mockito.when(requestRepository.findById(1L)).thenReturn(Optional.empty());
+
+        Assertions.assertThatThrownBy(() -> requestServiceImpl.getRequestById(1L))
+                .isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    void getRequestDtoById_ShouldThrowNotFoundException_WhenRequestNotFound() {
+        Mockito.when(requestRepository.findById(1L)).thenReturn(Optional.empty());
+
+        Assertions.assertThatThrownBy(() -> requestServiceImpl.getRequestDtoById(1L, 1L))
+                .isInstanceOf(NotFoundException.class);
     }
 
 }

@@ -14,6 +14,8 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.model.StateParam;
 import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.exception.AccessException;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoForRequest;
 import ru.practicum.shareit.item.dto.ItemMapStruct;
@@ -32,6 +34,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
@@ -237,6 +240,44 @@ class BookingServiceImplTest {
         assertThat(result).hasSize(1);
         assertThat(result.getFirst()).isEqualTo(bookingDto);
         verify(bookingRepository).findByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(eq(1L), any(), any());
+    }
+
+    @Test
+    void approvedBooking_ShouldThrowNotFoundException_WhenBookingDoesNotExist() {
+        Mockito.when(bookingRepository.findByIdWithBookerAndItem(1L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> bookingServiceImpl.approvedBooking(1L, 1L, true))
+                .isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    void approvedBooking_ShouldThrowAccessException_WhenUserIsNotOwner() {
+        User otherUser = User.builder().id(2L).build();
+        item.setOwner(otherUser);
+        Mockito.when(bookingRepository.findByIdWithBookerAndItem(1L)).thenReturn(Optional.of(booking));
+
+        assertThatThrownBy(() -> bookingServiceImpl.approvedBooking(1L, 1L, true))
+                .isInstanceOf(AccessException.class);
+    }
+
+    @Test
+    void getBookingByBookerIdOrOwnerId_ShouldThrowNotFoundException_WhenBookingDoesNotExist() {
+        Mockito.when(bookingRepository.findByIdWithBookerAndItem(1L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> bookingServiceImpl.getBookingByBookerIdOrOwnerId(1L, 1L))
+                .isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    void getBookingByBookerIdOrOwnerId_ShouldThrowAccessException_WhenUserHasNoRights() {
+        User otherUser = User.builder().id(2L).build();
+        item.setOwner(otherUser);
+        user.setId(3L);
+        booking.setBooker(user);
+        Mockito.when(bookingRepository.findByIdWithBookerAndItem(1L)).thenReturn(Optional.of(booking));
+
+        assertThatThrownBy(() -> bookingServiceImpl.getBookingByBookerIdOrOwnerId(4L, 1L))
+                .isInstanceOf(AccessException.class);
     }
 
 }

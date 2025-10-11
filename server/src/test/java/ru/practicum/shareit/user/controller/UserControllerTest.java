@@ -12,6 +12,9 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.dto.NewUserAddRequest;
 import ru.practicum.shareit.user.dto.UpdateUserRequest;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -127,6 +130,51 @@ class UserControllerTest {
                 .andExpect(status().isNoContent());
 
         Mockito.verify(userService).deleteUser(1L);
+    }
+
+    @Test
+    void getUserById_ShouldReturnNotFound_WhenUserDoesNotExist() throws Exception {
+        Mockito.when(userService.getUserDtoById(1L))
+                .thenThrow(new NotFoundException("Пользователь не найден"));
+
+        mockMvc.perform(get("/users/1"))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
+
+    @Test
+    void updateUser_ShouldReturnNotFound_WhenUserDoesNotExist() throws Exception {
+        Mockito.when(userService.updateUserDto(eq(1L), any(UpdateUserRequest.class)))
+                .thenThrow(new NotFoundException("Пользователь не найден"));
+
+        mockMvc.perform(patch("/users/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateUserRequest)))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
+
+    @Test
+    void addUser_ShouldReturnBadRequest_WhenValidationFails() throws Exception {
+        NewUserAddRequest invalidRequest = NewUserAddRequest.builder()
+                .name("")
+                .email("invalidEmail")
+                .build();
+
+        Mockito.when(userService.addUser(any(NewUserAddRequest.class)))
+                .thenThrow(new ValidationException("Неверные данные пользователя"));
+
+        mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    void deleteUser_ShouldReturnNotFound_WhenUserDoesNotExist() throws Exception {
+        Mockito.doThrow(new NotFoundException("Пользователь не найден"))
+                .when(userService).deleteUser(1L);
+
+        mockMvc.perform(delete("/users/1"))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
 }

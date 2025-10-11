@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.NewUserAddRequest;
 import ru.practicum.shareit.user.dto.UpdateUserRequest;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -130,6 +132,30 @@ class UserServiceImplTest {
         User result = userServiceImpl.getUserById(1L);
 
         assertThat(result).isEqualTo(user);
+    }
+
+    @Test
+    void updateUserDto_ShouldThrowNotFoundException_WhenUserDoesNotExist() {
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userServiceImpl.updateUserDto(1L, updateUserRequest))
+                .isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    void getUserDtoById_ShouldThrowNotFoundException_WhenUserDoesNotExist() {
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userServiceImpl.getUserDtoById(1L))
+                .isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    void getUserById_ShouldThrowNotFoundException_WhenUserDoesNotExist() {
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userServiceImpl.getUserById(1L))
+                .isInstanceOf(NotFoundException.class);
     }
 
 }
