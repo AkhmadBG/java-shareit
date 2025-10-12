@@ -210,7 +210,7 @@ class BookingServiceImplTest {
     }
 
     @Test
-    void getUserBookings_ShouldReturnListBookingDto() {
+    void getUserBookings_ShouldReturnListBookingDtoWithStateParamCURRENT() {
         Mockito.when(bookingRepository.findByBookerIdAndStartBeforeAndEndAfter(
                 eq(1L),
                 any(LocalDateTime.class),
@@ -218,7 +218,7 @@ class BookingServiceImplTest {
         ).thenReturn(List.of(booking));
         Mockito.when(bookingMapStruct.toBookingDto(booking)).thenReturn(bookingDto);
 
-        List<BookingDto> result = bookingServiceImpl.getUserBookings(1L, stateParam);
+        List<BookingDto> result = bookingServiceImpl.getUserBookings(1L, StateParam.CURRENT);
 
         assertThat(result.getFirst()).isEqualTo(bookingDto);
         verify(bookingRepository, times(1)).findByBookerIdAndStartBeforeAndEndAfter(
@@ -229,7 +229,67 @@ class BookingServiceImplTest {
     }
 
     @Test
-    void getBookingsForItemsByOwnerId_ShouldReturnListBookingDto() {
+    void getUserBookings_ShouldReturnListBookingDtoWithStateParamPast() {
+        Mockito.when(bookingRepository.findByBookerIdAndEndBefore(
+                eq(1L),
+                any(LocalDateTime.class))
+        ).thenReturn(List.of(booking));
+        Mockito.when(bookingMapStruct.toBookingDto(booking)).thenReturn(bookingDto);
+
+        List<BookingDto> result = bookingServiceImpl.getUserBookings(1L, StateParam.PAST);
+
+        assertThat(result.getFirst()).isEqualTo(bookingDto);
+        verify(bookingRepository, times(1)).findByBookerIdAndEndBefore(
+                eq(1L),
+                any(LocalDateTime.class));
+        verify(bookingMapStruct, times(1)).toBookingDto(booking);
+    }
+
+    @Test
+    void getUserBookings_ShouldReturnListBookingDtoWithStateParamFUTURE() {
+        Mockito.when(bookingRepository.findByBookerIdAndStartAfter(
+                eq(1L),
+                any(LocalDateTime.class))
+        ).thenReturn(List.of(booking));
+        Mockito.when(bookingMapStruct.toBookingDto(booking)).thenReturn(bookingDto);
+
+        List<BookingDto> result = bookingServiceImpl.getUserBookings(1L, StateParam.FUTURE);
+
+        assertThat(result.getFirst()).isEqualTo(bookingDto);
+        verify(bookingRepository, times(1)).findByBookerIdAndStartAfter(
+                eq(1L),
+                any(LocalDateTime.class));
+        verify(bookingMapStruct, times(1)).toBookingDto(booking);
+    }
+
+    @Test
+    void getUserBookings_ShouldReturnListBookingDtoWithStateParamWAITING() {
+        Mockito.when(bookingRepository.findByBookerIdAndStatus(1L, BookingStatus.WAITING)
+        ).thenReturn(List.of(booking));
+        Mockito.when(bookingMapStruct.toBookingDto(booking)).thenReturn(bookingDto);
+
+        List<BookingDto> result = bookingServiceImpl.getUserBookings(1L, StateParam.WAITING);
+
+        assertThat(result.getFirst()).isEqualTo(bookingDto);
+        verify(bookingRepository, times(1)).findByBookerIdAndStatus( 1L, BookingStatus.WAITING);
+        verify(bookingMapStruct, times(1)).toBookingDto(booking);
+    }
+
+    @Test
+    void getUserBookings_ShouldReturnListBookingDtoWithStateParamREJECTED() {
+        Mockito.when(bookingRepository.findByBookerIdAndStatus(1L, BookingStatus.REJECTED)
+        ).thenReturn(List.of(booking));
+        Mockito.when(bookingMapStruct.toBookingDto(booking)).thenReturn(bookingDto);
+
+        List<BookingDto> result = bookingServiceImpl.getUserBookings(1L, StateParam.REJECTED);
+
+        assertThat(result.getFirst()).isEqualTo(bookingDto);
+        verify(bookingRepository, times(1)).findByBookerIdAndStatus( 1L, BookingStatus.REJECTED);
+        verify(bookingMapStruct, times(1)).toBookingDto(booking);
+    }
+
+    @Test
+    void getBookingsForItemsByOwnerId_ShouldReturnListBookingDtoWithStateParamCURRENT() {
         Mockito.when(userService.getUserById(1L)).thenReturn(user);
         Mockito.when(bookingRepository.findByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(eq(1L), any(), any()))
                 .thenReturn(List.of(booking));
@@ -240,6 +300,62 @@ class BookingServiceImplTest {
         assertThat(result).hasSize(1);
         assertThat(result.getFirst()).isEqualTo(bookingDto);
         verify(bookingRepository).findByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(eq(1L), any(), any());
+    }
+
+    @Test
+    void getBookingsForItemsByOwnerId_ShouldReturnListBookingDtoWithStateParamPAST() {
+        Mockito.when(userService.getUserById(1L)).thenReturn(user);
+        Mockito.when(bookingRepository.findByItemOwnerIdAndEndBeforeOrderByStartDesc(eq(1L), any()))
+                .thenReturn(List.of(booking));
+        Mockito.when(bookingMapStruct.toBookingDto(booking)).thenReturn(bookingDto);
+
+        List<BookingDto> result = bookingServiceImpl.getBookingsForItemsByOwnerId(1L, StateParam.PAST);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst()).isEqualTo(bookingDto);
+        verify(bookingRepository).findByItemOwnerIdAndEndBeforeOrderByStartDesc(eq(1L), any());
+    }
+
+    @Test
+    void getBookingsForItemsByOwnerId_ShouldReturnListBookingDtoWithStateParamFUTURE() {
+        Mockito.when(userService.getUserById(1L)).thenReturn(user);
+        Mockito.when(bookingRepository.findByItemOwnerIdAndStartAfterOrderByStartDesc(eq(1L), any()))
+                .thenReturn(List.of(booking));
+        Mockito.when(bookingMapStruct.toBookingDto(booking)).thenReturn(bookingDto);
+
+        List<BookingDto> result = bookingServiceImpl.getBookingsForItemsByOwnerId(1L, StateParam.FUTURE);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst()).isEqualTo(bookingDto);
+        verify(bookingRepository).findByItemOwnerIdAndStartAfterOrderByStartDesc(eq(1L), any());
+    }
+
+    @Test
+    void getBookingsForItemsByOwnerId_ShouldReturnListBookingDtoWithStateParamWAITING() {
+        Mockito.when(userService.getUserById(1L)).thenReturn(user);
+        Mockito.when(bookingRepository.findByItemOwnerIdAndStatusOrderByStartDesc(1L, BookingStatus.WAITING))
+                .thenReturn(List.of(booking));
+        Mockito.when(bookingMapStruct.toBookingDto(booking)).thenReturn(bookingDto);
+
+        List<BookingDto> result = bookingServiceImpl.getBookingsForItemsByOwnerId(1L, StateParam.WAITING);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst()).isEqualTo(bookingDto);
+        verify(bookingRepository).findByItemOwnerIdAndStatusOrderByStartDesc(1L, BookingStatus.WAITING);
+    }
+
+    @Test
+    void getBookingsForItemsByOwnerId_ShouldReturnListBookingDtoWithStateParamREJECTED() {
+        Mockito.when(userService.getUserById(1L)).thenReturn(user);
+        Mockito.when(bookingRepository.findByItemOwnerIdAndStatusOrderByStartDesc(1L, BookingStatus.REJECTED))
+                .thenReturn(List.of(booking));
+        Mockito.when(bookingMapStruct.toBookingDto(booking)).thenReturn(bookingDto);
+
+        List<BookingDto> result = bookingServiceImpl.getBookingsForItemsByOwnerId(1L, StateParam.REJECTED);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst()).isEqualTo(bookingDto);
+        verify(bookingRepository).findByItemOwnerIdAndStatusOrderByStartDesc(1L, BookingStatus.REJECTED);
     }
 
     @Test
