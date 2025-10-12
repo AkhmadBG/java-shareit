@@ -271,7 +271,7 @@ class BookingServiceImplTest {
         List<BookingDto> result = bookingServiceImpl.getUserBookings(1L, StateParam.WAITING);
 
         assertThat(result.getFirst()).isEqualTo(bookingDto);
-        verify(bookingRepository, times(1)).findByBookerIdAndStatus( 1L, BookingStatus.WAITING);
+        verify(bookingRepository, times(1)).findByBookerIdAndStatus(1L, BookingStatus.WAITING);
         verify(bookingMapStruct, times(1)).toBookingDto(booking);
     }
 
@@ -284,7 +284,7 @@ class BookingServiceImplTest {
         List<BookingDto> result = bookingServiceImpl.getUserBookings(1L, StateParam.REJECTED);
 
         assertThat(result.getFirst()).isEqualTo(bookingDto);
-        verify(bookingRepository, times(1)).findByBookerIdAndStatus( 1L, BookingStatus.REJECTED);
+        verify(bookingRepository, times(1)).findByBookerIdAndStatus(1L, BookingStatus.REJECTED);
         verify(bookingMapStruct, times(1)).toBookingDto(booking);
     }
 
